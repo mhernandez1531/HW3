@@ -341,58 +341,84 @@ class LUC_AVLTree {
      *  @return node - new top of subtree, it possibly changed due to a rotation
      */
 
-    private Node deleteElement(int value, Node node) {
+private Node deleteElement(int value, Node node) {
 
+        // Base case if current node is null, return null (val not found)
         if(node == null) {
             return null;
         }
 
+        // If the value to delete is less than the current node value
+        // searchin the left subtree
         if (value < node.value) {
             node.leftChild = deleteElement(value,node.leftChild);
 
+        // If the value to delete greater than the current node value
+        // search in right subtree
         } else if (value > node.value) {
             node.rightChild = deleteElement(value, node.rightChild);
+
+        // If value's equal to current nodes value, we found the node to delete
         } else {
 
+            // Case 1: Node is a leaf no children
             if (node.leftChild == null && node.rightChild == null) {
-                return null;
+                return null; // Nodes removed
             }
 
+            // Case 2: Node only has a right child
             if (node.leftChild == null) {
-                return node.rightChild;
+                return node.rightChild; // Replace node with right child
+
+            // Case 3: Node only has a left child
             } else if (node.rightChild == null) {
-                return node.leftChild;
+                return node.leftChild; // Replace node with left child
             }
 
+            // Case 4: Node has both childten
+            // Find the inorder successor (smallest node in right subtree)
             Node temp = minValueNode(node.rightChild);
-
+            // Copy the inorder successors value to this node
             node.value = temp.value;
-
+            // Delete inorder successor node from right subtree
             node.rightChild = deleteElement(temp.value, node.rightChild);
         }
 
+        // Update height of the current node
         node.height = Math.max(getHeight(node.leftChild), getHeight(node.rightChild)) + 1;
 
+        // Calculate balance factor of the current node
         int balanceFactor = getBalanceFactor(node);
 
+        // Check if trees left heavy
         if (balanceFactor > 1 && getBalanceFactor(node.leftChild) >= 0) {
+            // If left childs a left heavy do a LL rotation
             return LLRotation(node);
         }
 
+        // Check if trees left heavy and the left childs right heavy
         if (balanceFactor > 1 && getBalanceFactor(node.leftChild) < 0) {
+            // fix left child with a RR rotation
             node.leftChild = RRRotation(node.leftChild);
+            // do a LL rotation on the current node
             return LLRotation(node);
         }
 
+        // Check if tree if right heavy
         if (balanceFactor < -1 && getBalanceFactor(node.rightChild) <= 0) {
+            // If right child is also right heavy do a RR rotation
             return RRRotation(node);
         }
 
+        // Check if tree is right heavy and the right child is left heavy
         if (balanceFactor < -1 && getBalanceFactor(node.rightChild) > 0) {
+            // fix the right child with a LL rotation
             node.rightChild = LLRotation(node.rightChild);
+            // Do a RR rotation on the current node
             return RRRotation(node);
         }
 
+        // Return updated root of subtree after rebalancing
         return node;
     }
 
